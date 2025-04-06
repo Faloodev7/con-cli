@@ -7,8 +7,20 @@ const axios = require('axios');
 const admin = require('firebase-admin');
 const cors = require('cors');
 
-// Inicializa Firebase con las credenciales de servicio
-const serviceAccount = require('./firebase-credentials.json');
+// Carga las credenciales de Firebase
+let serviceAccount;
+if (process.env.FIREBASE_CREDENTIALS) {
+  // En producción (Render), se cargará la variable de entorno FIREBASE_CREDENTIALS
+  try {
+    serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS);
+  } catch (error) {
+    console.error('Error al parsear FIREBASE_CREDENTIALS:', error);
+    process.exit(1);
+  }
+} else {
+  // En desarrollo local, usa el archivo local (asegúrate de tenerlo en .gitignore)
+  serviceAccount = require('./firebase-credentials.json');
+}
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -19,7 +31,7 @@ const db = admin.firestore();
 const CLIENT_ID = '5628570819950677';
 const CLIENT_SECRET = 'hv6VQfos0bX5m52D1boJTypy1Si7NqZY';
 
-// URL de autorización y token de Mercado Libre
+// URLs de Mercado Libre
 const ML_AUTH_URL = 'https://auth.mercadolibre.com.ar/authorization';
 const ML_TOKEN_URL = 'https://api.mercadolibre.com/oauth/token';
 
@@ -28,7 +40,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Servir archivos estáticos desde la carpeta "views"
+// Sirve los archivos estáticos desde la carpeta "views"
 app.use(express.static(path.join(__dirname, 'views')));
 
 // Ruta principal: sirve index.html
@@ -38,11 +50,10 @@ app.get('/', (req, res) => {
 
 /**
  * /auth
- * Inicia el flujo OAuth redirigiendo al usuario a Mercado Libre.
+ * Inicia el flujo OAuth redirigiendo al usuario a la página de Mercado Libre.
  */
 app.get('/auth', (req, res) => {
   try {
-    // La redirect_uri apunta a la ruta /callback de nuestro servidor
     const redirectUri = `${req.protocol}://${req.get('host')}/callback`;
     const authUrl = `${ML_AUTH_URL}?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}`;
     res.redirect(authUrl);
@@ -54,7 +65,7 @@ app.get('/auth', (req, res) => {
 
 /**
  * /callback
- * Esta ruta es llamada por Mercado Libre con un "code" que se intercambia por tokens.
+ * Ruta de callback que Mercado Libre llama con un "code". Se intercambia el código por tokens.
  */
 app.get('/callback', async (req, res) => {
   const code = req.query.code;
@@ -63,23 +74,19 @@ app.get('/callback', async (req, res) => {
   }
   try {
     const redirectUri = `${req.protocol}://${req.get('host')}/callback`;
-    const tokenResponse = await axios.post(
-      ML_TOKEN_URL,
-      null,
-      {
-        params: {
-          grant_type: 'authorization_code',
-          client_id: CLIENT_ID,
-          client_secret: CLIENT_SECRET,
-          code: code,
-          redirect_uri: redirectUri,
-        },
-      }
-    );
+    const tokenResponse = await axios.post(ML_TOKEN_URL, null, {
+      params: {
+        grant_type: 'authorization_code',
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        code: code,
+        redirect_uri: redirectUri,
+      },
+    });
 
     const { access_token, token_type, expires_in, scope, user_id, refresh_token } = tokenResponse.data;
 
-    // Guardamos los tokens y datos en Firestore, en la colección 'clientes-ml'
+    // Guarda los tokens en Firestore, en la colección 'clientes-ml'
     const docRef = db.collection('clientes-ml').doc(String(user_id));
     await docRef.set({
       ml_user_id: user_id,
@@ -91,7 +98,6 @@ app.get('/callback', async (req, res) => {
       created_at: new Date().toISOString(),
     });
 
-    // Redirigimos al usuario a la página principal con un indicador de éxito
     res.redirect('/?ml_auth=success');
   } catch (error) {
     console.error('Error al intercambiar code por tokens:', error.response?.data || error.message);
@@ -101,7 +107,7 @@ app.get('/callback', async (req, res) => {
 
 /**
  * /admin
- * Panel sencillo para visualizar los clientes y sus tokens almacenados en Firestore.
+ * Panel sencillo para visualizar los tokens y datos almacenados en Firestore.
  */
 app.get('/admin', async (req, res) => {
   try {
@@ -144,7 +150,7 @@ app.get('/admin', async (req, res) => {
   }
 });
 
-// Inicia el servidor en el puerto 3000 o el definido en process.env.PORT
+// Inicia el servidor en el puerto configurado (por defecto, 3000)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
