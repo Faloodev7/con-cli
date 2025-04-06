@@ -355,7 +355,28 @@
             // Llamamos a la ruta /auth en nuestro servidor
             window.location.href = '/auth';
         }
-        
+
+        // Detectar el parámetro ml_auth en la URL y avanzar al paso de confirmación si es "success"
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const mlAuth = urlParams.get('ml_auth');
+            if (mlAuth === 'success') {
+                // Oculta todos los pasos y muestra el paso 3
+                document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
+                document.getElementById('step3').classList.add('active');
+                
+                // Marca los pasos 1 y 2 como completados y el paso 3 como activo
+                document.getElementById('step1-number').classList.add('completed');
+                document.getElementById('step2-number').classList.add('completed');
+                document.getElementById('step1-number').classList.remove('active');
+                document.getElementById('step2-number').classList.remove('active');
+                document.getElementById('step3-number').classList.add('active');
+                
+                // Limpia el parámetro de la URL para evitar repetir la acción al recargar
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
     </script>
+    
 </body>
 </html>

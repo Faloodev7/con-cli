@@ -36,7 +36,7 @@ const ML_AUTH_URL = 'https://auth.mercadolibre.com.ar/authorization';
 const ML_TOKEN_URL = 'https://api.mercadolibre.com/oauth/token';
 
 const app = express();
-app.set('trust proxy', true);
+app.set('trust proxy', true);  // Permite que Express use la cabecera x-forwarded-proto para determinar el protocolo (https)
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
