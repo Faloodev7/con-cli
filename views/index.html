@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conectar tu cuenta de MercadoLibre</title>
+    <style>
+        :root {
+            --primary: #3483fa;
+            --success: #00a650;
+            --error: #f44336;
+            --text: #333;
+            --light-bg: #f5f5f5;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--light-bg);
+        }
+        
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: var(--primary);
+            text-align: center;
+        }
+        
+        .step {
+            display: none;
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .step.active {
+            display: block;
+        }
+        
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .progress-bar:before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #ddd;
+            z-index: 1;
+        }
+        
+        .progress-step {
+            text-align: center;
+            z-index: 2;
+            background: white;
+            padding: 0 10px;
+        }
+        
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #ddd;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 5px;
+            font-weight: bold;
+        }
+        
+        .step-number.active {
+            background: var(--primary);
+        }
+        
+        .step-number.completed {
+            background: var(--success);
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2968c8;
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        .status-message {
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .success {
+            background-color: #e6f7ee;
+            color: var(--success);
+            border-left: 4px solid var(--success);
+            display: block;
+        }
+        
+        .error {
+            background-color: #ffebee;
+            color: var(--error);
+            border-left: 4px solid var(--error);
+            display: block;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        #authButton {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        #authButton img {
+            height: 20px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Conectar tu cuenta de MercadoLibre</h1>
+        
+        <div class="progress-bar">
+            <div class="progress-step">
+                <div class="step-number active" id="step1-number">1</div>
+                <div>Datos básicos</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-number" id="step2-number">2</div>
+                <div>Autorización</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-number" id="step3-number">3</div>
+                <div>Confirmación</div>
+            </div>
+        </div>
+        
+        <!-- Paso 1: Datos del cliente -->
+        <div id="step1" class="step active">
+            <h2>Información del vendedor</h2>
+            <p>Por favor completa tus datos para configurar la conexión con tu cuenta de MercadoLibre.</p>
+            
+            <div class="form-group">
+                <label for="nombre">Nombre o razón social</label>
+                <input type="text" id="nombre" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="pais">País de tu cuenta MercadoLibre</label>
+                <select id="pais" required>
+                    <option value="">Seleccionar...</option>
+                    <option value="MLA">Argentina</option>
+                    <option value="MLB">Brasil</option>
+                    <option value="MCO">Colombia</option>
+                    <option value="MLC">Chile</option>
+                    <option value="MLM">México</option>
+                    <option value="MLU">Uruguay</option>
+                    <option value="MPE">Perú</option>
+                </select>
+            </div>
+            
+            <button id="next1">Siguiente</button>
+        </div>
+        
+        <!-- Paso 2: Autorización -->
+        <div id="step2" class="step">
+            <h2>Autorizar acceso</h2>
+            <p>Necesitamos que autorices la conexión con tu cuenta de MercadoLibre.</p>
+            
+            <div class="form-group">
+                <ol>
+                    <li>Haz clic en el botón "Autorizar con MercadoLibre"</li>
+                    <li>Inicia sesión con tu cuenta de vendedor</li>
+                    <li>Revisa y acepta los permisos solicitados</li>
+                    <li>Serás redirigido automáticamente de vuelta</li>
+                </ol>
+            </div>
+            
+            <button id="authButton">
+                <img src="https://http2.mlstatic.com/frontend-assets/ui-navigation/5.18.9/mercadolibre/logo__small@2x.png" alt="MercadoLibre">
+                Autorizar con MercadoLibre
+            </button>
+            
+            <div id="authStatus" class="status-message hidden"></div>
+            
+            <div class="button-group">
+                <button id="back2">Atrás</button>
+                <button id="next2" disabled>Siguiente</button>
+            </div>
+        </div>
+        
+        <!-- Paso 3: Confirmación -->
+        <div id="step3" class="step">
+            <h2>¡Conexión exitosa!</h2>
+            
+            <div id="successMessage" class="status-message success">
+                Tu cuenta de MercadoLibre ha sido conectada correctamente.
+            </div>
+            
+            <p>Ahora podrás:</p>
+            <ul>
+                <li>Generar reportes de ventas automáticos</li>
+                <li>Analizar el desempeño de tus productos</li>
+                <li>Recibir recomendaciones para mejorar tus ventas</li>
+            </ul>
+            
+            <p>Recibirás un email de confirmación con los próximos pasos.</p>
+            
+            <button id="finish">Finalizar</button>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentStep = 1;
+        const totalSteps = 3;
+        let authWindow = null;
+        
+        // Elementos del DOM
+        const steps = {
+            1: document.getElementById('step1'),
+            2: document.getElementById('step2'),
+            3: document.getElementById('step3')
+        };
+        
+        const stepNumbers = {
+            1: document.getElementById('step1-number'),
+            2: document.getElementById('step2-number'),
+            3: document.getElementById('step3-number')
+        };
+        
+        // Botones de navegación
+        document.getElementById('next1').addEventListener('click', nextStep);
+        document.getElementById('back2').addEventListener('click', prevStep);
+        document.getElementById('next2').addEventListener('click', nextStep);
+        document.getElementById('finish').addEventListener('click', () => {
+            alert('Proceso completado. Puedes cerrar esta ventana.');
+        });
+        
+        // Botón de autorización
+        document.getElementById('authButton').addEventListener('click', iniciarAutorizacion);
+        
+        // Función para avanzar al siguiente paso
+        function nextStep() {
+            if (currentStep === 1 && !validarPaso1()) return;
+            
+            steps[currentStep].classList.remove('active');
+            stepNumbers[currentStep].classList.remove('active');
+            stepNumbers[currentStep].classList.add('completed');
+            
+            currentStep++;
+            
+            steps[currentStep].classList.add('active');
+            stepNumbers[currentStep].classList.add('active');
+        }
+        
+        // Función para retroceder al paso anterior
+        function prevStep() {
+            steps[currentStep].classList.remove('active');
+            stepNumbers[currentStep].classList.remove('active');
+            
+            currentStep--;
+            
+            steps[currentStep].classList.add('active');
+            stepNumbers[currentStep].classList.add('active');
+        }
+        
+        // Validación del paso 1
+        function validarPaso1() {
+            const nombre = document.getElementById('nombre').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const pais = document.getElementById('pais').value;
+            
+            if (!nombre || !email || !pais) {
+                alert('Por favor completa todos los campos obligatorios.');
+                return false;
+            }
+            
+            if (!validarEmail(email)) {
+                alert('Por favor ingresa un email válido.');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Validación simple de email
+        function validarEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+        
+        // Iniciar proceso de autorización OAuth
+        function iniciarAutorizacion() {
+            // Llamamos a la ruta /auth en nuestro servidor
+            window.location.href = '/auth';
+        }
+        
+    </script>
+</body>
+</html>
